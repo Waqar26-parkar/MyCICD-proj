@@ -7,31 +7,34 @@ executors:
     working_directory: ~/repo
 
 jobs:
-  build_and_deploy:
-    executor: ubuntu-executor
+  build:
+    docker:
+      - image: circleci/python:3.9  # Base image for the job
     steps:
-      - checkout  # Check out your code from the GitHub repository
-      - run:
-          name: Install Docker
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y docker.io  # Install Docker on the CircleCI executor
+      - checkout  # Checkout your code
+      
+      # Set up Docker Buildx for multi-platform builds
       - run:
           name: Set up Docker Buildx
           command: |
-            docker buildx create --use  # Set up Buildx for Docker multi-platform builds
+            docker buildx create --use  # Initialize and set the current builder context
+            docker buildx build --platform linux/amd64,linux/arm64 -t $ACR_NAME.azurecr.io/my-flask-app:latest . --push  # Build and push to ACR
+      
+      # Log in to Azure Container Registry (using environment variables from CircleCI)
       - run:
           name: Log in to Azure Container Registry
           command: |
-            echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+            echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin  # Login to ACR
+      
+      # Build Docker image and push to ACR (ensure correct ACR reference)
       - run:
-          name: Build and Push Docker Image
+          name: Build and Push Docker Image to ACR
           command: |
-            docker build -t $ACR_NAME.azurecr.io/my-flask-app:latest .
-            docker push $ACR_NAME.azurecr.io/my-flask-app:latest
+            docker build -t $ACR_NAME.azurecr.io/my-flask-app:latest .  # Build the Docker image
+            docker push $ACR_NAME.azurecr.io/my-flask-app:latest  # Push the image to ACR
 
 workflows:
   version: 2
   deploy:
     jobs:
-      - build_and_deploy  # Run the build and deploy job
+      - build  # Run the build job
