@@ -1,40 +1,43 @@
 version: 2.1
 
 executors:
-  ubuntu-executor:
+  python-executor:
     docker:
-      - image: circleci/python:3.9  # Use Python Docker image
-    working_directory: ~/repo
+      - image: circleci/python:3.8
 
 jobs:
   build:
-    docker:
-      - image: circleci/python:3.9  # Base image for the job
+    executor: python-executor
     steps:
-      - checkout  # Checkout your code
-      
-      # Set up Docker Buildx for multi-platform builds
+      - checkout
       - run:
-          name: Set up Docker Buildx
+          name: Install Dependencies
           command: |
-            docker buildx create --use  # Initialize and set the current builder context
-            docker buildx build --platform linux/amd64,linux/arm64 -t $ACR_NAME.azurecr.io/my-flask-app:latest . --push  # Build and push to ACR
-      
-      # Log in to Azure Container Registry (using environment variables from CircleCI)
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
       - run:
-          name: Log in to Azure Container Registry
-          command: |
-            echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin  # Login to ACR
-      
-      # Build Docker image and push to ACR (ensure correct ACR reference)
+          name: Run Tests
+          command: pytest
+
+  deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
       - run:
-          name: Build and Push Docker Image to ACR
+          name: Login to Azure Container Registry
           command: |
-            docker build -t $ACR_NAME.azurecr.io/my-flask-app:latest .  # Build the Docker image
-            docker push $ACR_NAME.azurecr.io/my-flask-app:latest  # Push the image to ACR
+            az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+      - run:
+          name: Push Docker Image
+          command: |
+            az acr build --registry myfirstdockerazregistry --image my-flask-app:latest .
 
 workflows:
   version: 2
-  deploy:
+  build-and-deploy:
     jobs:
-      - build  # Run the build job
+      - build
+      - deploy:
+          requires:
+            - build
