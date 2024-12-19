@@ -45,4 +45,4 @@ jobs:
 
     - name: Push Docker Image to ACR
       run: |
-        az acr build --registry myfirstdockerazregistry --image my-flask-app:latest .
+        az acr build --registry myfirstcicdregistry --image my-flask-app:latest .

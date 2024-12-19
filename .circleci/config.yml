@@ -31,7 +31,7 @@ jobs:
       - run:
           name: Push Docker Image
           command: |
-            az acr build --registry myfirstdockerazregistry --image my-flask-app:latest .
+            az acr build --registry myfirstcicdregistry --image my-flask-app:latest .
 
 workflows:
   version: 2
