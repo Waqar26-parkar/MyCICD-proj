@@ -40,17 +40,14 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-      # Add debug information if necessary
-    - name: Verify Azure CLI Installation
-      run: |
-        az --version
-        az account show
-        az acr list --resource-group MyFIrstDockerResourceGroup --query "[].{Name:name, Location:location}" --output table
-      # Ensures Azure CLI is installed and shows the account info
 
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
 
-    - name: Build and Push Docker Image to ACR
+    - name: Pull Docker Image from ACR
       run: |
-        az acr build --registry myfirstcicddockerregistry.azurecr.io --image my-flask-app:latest .
+        docker pull myfirstcicddockerregistry.azurecr.io/my-flask-app:latest
+
+    - name: Run Docker container (or deploy it elsewhere)
+      run: |
+        docker run -d -p 5000:5000 myfirstcicddockerregistry.azurecr.io/my-flask-app:latest
