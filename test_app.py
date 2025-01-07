@@ -1,68 +1,23 @@
-from flask import Flask, jsonify, request
+from flask import Flask
 import os
-import logging
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG if os.environ.get("FLASK_ENV") == "development" else logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Flask app setup
 app = Flask(__name__)
-
-# Load configuration from environment variables or config.py
-class Config:
-    """Base configuration class."""
-    SECRET_KEY = os.environ.get("SECRET_KEY", "mydefaultsecret")
-    DEBUG = os.environ.get("FLASK_ENV") == "development"
-    PORT = int(os.environ.get("PORT", 8085))
-
-class DevelopmentConfig(Config):
-    """Development environment config."""
-    DEBUG = True
-
-class ProductionConfig(Config):
-    """Production environment config."""
-    DEBUG = False
-
-# Select the configuration based on environment
-if os.environ.get("FLASK_ENV") == "development":
-    app.config.from_object(DevelopmentConfig)
-else:
-    app.config.from_object(ProductionConfig)
 
 # Route for the homepage
 @app.route('/')
-def hello_world():
-    """Test route for homepage."""
-    logger.info("Hello World route was accessed.")
-    return jsonify(message="Hello, World!")
+def test_hello_world():
+    return "Hello,  World!"
 
-# Route for another page
-@app.route('/info', methods=["GET"])
-def get_info():
-    """Return some info as JSON."""
-    data = {"app_name": "Flask CI/CD App", "version": "1.0.0"}
-    logger.debug(f"Returned info: {data}")
-    return jsonify(data)
+print("This is muy first cicd pipline")
 
-# Error handling
-@app.errorhandler(404)
-def page_not_found(e):
-    """Handle 404 errors."""
-    logger.error(f"Error 404: {e}")
-    return jsonify(error="Not found"), 404
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    """Handle 500 errors."""
-    logger.error(f"Error 500: {e}")
-    return jsonify(error="Internal server error"), 500
-
-# Main entry point for the app
 if __name__ == "__main__":
+    # Get the port from environment variable or use default (8080)
+    port = int(os.environ.get("PORT", 8085))
+    
+    # Enable debugging in development
+    debug_mode = os.environ.get("FLASK_ENV") == "development"
+
     try:
-        # Run the app on the defined port and environment
-        logger.info(f"Starting the app on port {app.config['PORT']} with debug={app.config['DEBUG']}")
-        app.run(host="0.0.0.0", port=app.config["PORT"], debug=app.config["DEBUG"])
+        app.run(host='0.0.0.0', port=port, debug=debug_mode)
     except Exception as e:
-        logger.error(f"Error starting the app: {e}")
+        print(f"Error starting the app: {e}")
