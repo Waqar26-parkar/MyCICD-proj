@@ -32,7 +32,7 @@ jobs:
       - run:
           name: Build and Push Docker Image
           command: |
-            az acr build --registry myfirstcicdregistry --image my-flask-app:latest .
+            az acr build --registry myfirstcicddockerregistry --image my-flask-app:latest .
 
 workflows:
   version: 2
