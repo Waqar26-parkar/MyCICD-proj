@@ -8,6 +8,8 @@ app = Flask(__name__)
 def test_hello_world():
     return "Hello,  World!"
 
+print("This is muy first cicd pipline")
+
 if __name__ == "__main__":
     # Get the port from environment variable or use default (8080)
     port = int(os.environ.get("PORT", 8085))
