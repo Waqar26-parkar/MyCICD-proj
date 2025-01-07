@@ -40,6 +40,13 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Add debug information if necessary
+    - name: Verify Azure CLI Installation
+      run: |
+        az --version
+        az account show
+        az acr list --resource-group MyFIrstDockerResourceGroup --query "[].{Name:name, Location:location}" --output table
+      # Ensures Azure CLI is installed and shows the account info
 
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
